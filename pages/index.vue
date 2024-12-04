@@ -25,7 +25,7 @@ const reset = () => {
 }
 const goto = (page: number) => {
   page = (page < 1) ? 1 : page;
-  page = (page >filmStore.countPages) ? filmStore.countPages : page;
+  page = (page > filmStore.countPages) ? filmStore.countPages : page;
   if (page <= filmStore.countPage && page > 0) {
     filmStore.currentPage = page;
   filmStore.fetchFilms();
@@ -75,7 +75,7 @@ const goto = (page: number) => {
              class="card-img-top" alt="...">
         <div class="card-body">
           <h5 class="card-title"> {{ film.name }}</h5>
-          <p class="card-text"> {{ film.raringAvg }}</p>
+          <p class="card-text"> {{ film.ratingAvg }}</p>
           <p class="card-text"> {{ film.duration }} min.</p>
           <p class="card-text">
             <template v-for="(category, index) in film.categories" :key="category.id">

@@ -1,4 +1,32 @@
 <script setup lang="ts">
+import {useAuthStore} from "~/stores/auth";
+import {useRouter} from "#vue-router";
+
+const fio = ref("");
+const email = ref("");
+const password = ref("");
+const birthday = ref("");
+const gender = ref(0);
+const genderStore = useGenderStore();
+const authStore = useAuthStore();
+const router = useRouter()
+const register = async () => {
+  try {
+    await authStore.signup({
+          fio: fio.value,
+          email: email.value,
+          password: password.value,
+          birthday: birthday.value,
+          gender_id: gender.value,
+        },
+    );
+    router.push("/");
+  } catch (e){
+    console.log(e);
+  }
+
+}
+
 
 </script>
 
@@ -6,31 +34,31 @@
   <div class="row">
 
     <div class="col w-75">
-      <form method="">
+      <form action="" @submit.prevent="register">
         <h1>Registration</h1>
         <div class="mb-3">
           <label for="fio" class="form-label">FIO</label>
-          <input type="text" class="form-control" id="fio" placeholder="Ivanov Ivan Ivanovich">
+          <input v-model="fio" type="text" class="form-control" id="fio" placeholder="Ivanov Ivan Ivanovich">
         </div>
         <div class="mb-3">
           <label for="email" class="form-label">E-Mail</label>
-          <input type="email" class="form-control" id="email" placeholder="mail@email.com">
+          <input v-model="email" type="email" class="form-control" id="email" placeholder="mail@email.com">
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password" placeholder="">
+          <input v-model="password" type="password" class="form-control" id="password" placeholder="">
         </div>
         <div class="mb-3">
           <label for="birthday" class="form-label">Birthday</label>
-          <input type="date" class="form-control" id="birthday">
+          <input v-model="birthday" type="date" class="form-control" id="birthday">
         </div>
         <div class="mb-3">
           <label for="gender">Gender</label>
-          <select class="form-select" aria-label="gender">
-            <option selected>Gender</option>
-            <option value="1">Male</option>
-            <option value="2">Female</option>
-            <option value="3">Other</option>
+          <select v-model="gender" class="form-select" aria-label="gender">
+            <option :value="null" selected>Gender</option>
+            <option v-for="gender in genderStore.genders"
+                    :key="gender.id"
+                    :value="gender.id">{{gender.name}}</option>
           </select>
         </div>
         <div>
