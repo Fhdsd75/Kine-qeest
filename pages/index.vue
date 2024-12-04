@@ -64,7 +64,7 @@ const goto = (page: number) => {
       </select>
     </div>
     <div class="col-md-2">
-      <button type="button" class="btn btn-outline-info" @click="reset">Reset</button>
+      <button type="button" class="btn btn-outline-warning" @click="reset">Reset</button>
     </div>
   </div>
   <div v-if="!filmStore.isLoading" class="row row-cols-1 row-cols-md-3 g-4 mt-2">
@@ -83,7 +83,7 @@ const goto = (page: number) => {
             </template>
           </p>
         </div>
-        <button type="button" class="btn btn-success">Details</button>
+        <button type="button" class="btn btn-warning">Details</button>
       </div>
     </div>
   </div>
@@ -117,5 +117,8 @@ const goto = (page: number) => {
 .card-img-top {
   height: 500px;
   object-fit: cover;
+}
+.card{
+  background-color: orange;
 }
 </style>
