@@ -75,7 +75,7 @@ const goto = (page: number) => {
              class="card-img-top" alt="...">
         <div class="card-body">
           <h5 class="card-title"> {{ film.name }}</h5>
-          <p class="card-text"> {{ film.ratingAvg }}</p>
+          <p class="card-text"> {{ Number(film.ratingAvg).toFixed(1) }}</p>
           <p class="card-text"> {{ film.duration }} min.</p>
           <p class="card-text">
             <template v-for="(category, index) in film.categories" :key="category.id">
@@ -83,7 +83,7 @@ const goto = (page: number) => {
             </template>
           </p>
         </div>
-        <button type="button" class="btn btn-success">Add</button>
+        <button type="button" class="btn btn-success">Details</button>
       </div>
     </div>
   </div>
