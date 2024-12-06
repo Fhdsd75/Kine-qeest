@@ -1,29 +1,25 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import {useAuthStore} from "~/stores/auth";
+import { useAuthStore } from "~/stores/auth";
 import axios from "axios";
 
-// ID фильма из маршрута
 const route = useRoute();
-const filmId = route.params.id;
-const authStore = useAuthStore()
+const filmId = route.params.id as string;
+const authStore = useAuthStore();
 
-// Реактивные данные
-const film = ref(null);
+const film = ref<any>(null);
 const reviews = ref([]);
-const newReview = ref(""); // Поле для ввода отзыва
-const activeTab = ref("trailer"); // Вкладки: трейлер или детали фильма
+const newReview = ref("");
+const activeTab = ref("trailer");
 
 const apiBaseUrl = "https://kinotower.polytech.kz/api/v1";
 
-// Форматирование даты для отображения
 const formatDate = (date: string) => {
-  const options = { year: "numeric", month: "long", day: "numeric" };
+  const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
   return new Date(date).toLocaleDateString(undefined, options);
 };
 
-// Загрузка данных фильма
 const fetchFilmData = async () => {
   try {
     const response = await axios.get(`${apiBaseUrl}/films/${filmId}`);
@@ -38,7 +34,6 @@ const fetchFilmData = async () => {
   }
 };
 
-// Загрузка отзывов
 const fetchFilmReviews = async () => {
   try {
     const response = await axios.get(`${apiBaseUrl}/films/${filmId}/reviews`);
@@ -48,30 +43,25 @@ const fetchFilmReviews = async () => {
   }
 };
 
-// Отправка отзыва
 const submitReview = async () => {
   if (!newReview.value.trim()) {
     alert("Отзыв не может быть пустым!");
     return;
   }
 
+  const token = authStore.authData?.token;
+  const userId = authStore.authData?.id;
+
+  if (!token || !userId) {
+    alert("Вы должны войти в систему, чтобы оставить отзыв.");
+    return;
+  }
+
   try {
-    const token = userStore.authData?.token;
-    const userId = userStore.authData?.id;
-
-    if (!token || !userId) {
-      alert("Вы должны войти в систему, чтобы оставить отзыв.");
-      return;
-    }
-
-    // Вывод токена для отладки
-    console.log("Токен:", token);
-
-    // Отправка POST-запроса
     await axios.post(
         `${apiBaseUrl}/users/${userId}/reviews`,
         {
-          film_id: filmId,
+          film_id: Number(filmId),
           message: newReview.value,
         },
         {
@@ -81,25 +71,48 @@ const submitReview = async () => {
         }
     );
 
-    newReview.value = ""; // Очистка поля ввода
-    await fetchFilmReviews(); // Обновление списка отзывов
+    newReview.value = "";
+    await fetchFilmReviews();
     alert("Отзыв успешно добавлен!");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Ошибка отправки отзыва:", error.response?.data || error.message);
     alert("Не удалось отправить отзыв. Попробуйте позже.");
   }
 };
 
-/////////////////////////////////////////////////////////////
-import { useAuthStore } from '~/stores/auth';
-const userStore = useAuthStore();
+const submitRating = async (rating: number) => {
+  const token = authStore.authData?.token;
+  const userId = authStore.authData?.id;
 
-// Выводим токен и ID пользователя для проверки
-console.log('Токен пользователя:', userStore.authData?.token);
-console.log('ID пользователя:', userStore.authData?.id);
+  if (!token || !userId) {
+    alert("Вы должны войти в систему, чтобы оценить фильм.");
+    return;
+  }
 
+  try {
+    await axios.post(
+        `${apiBaseUrl}/users/${userId}/ratings`,
+        {
+          film_id: Number(filmId),
+          ball: rating,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+    );
+    alert(`Оценка ${rating} успешно добавлена!`);
+  } catch (error: any) {
+    console.error("Ошибка отправки оценки:", error.response?.data || error.message);
+    if (error.response?.status === 401 && error.response?.data?.message === "Score exist") {
+      alert("Вы уже оценили этот фильм.");
+    } else {
+      alert("Не удалось отправить оценку. Попробуйте позже.");
+    }
+  }
+};
 
-// Загрузка данных при монтировании
 onMounted(async () => {
   await fetchFilmData();
   await fetchFilmReviews();
@@ -135,9 +148,17 @@ onMounted(async () => {
       </div>
       <div class="col-md-3 d-flex flex-column align-items-center">
         <h5>Рейтинг</h5>
-        <div class="rating-stars">
-          <span v-for="n in 5" :key="n" class="star">
-            <i class="bi" :class="n <= Math.round(film.ratingAvg) ? 'bi-star-fill' : 'bi-star'"></i>
+        <!-- Отображение среднего рейтинга -->
+        <p class="display-4">{{ film.ratingAvg.toFixed(1) }}</p>
+        <h6>Оцените фильм (1-5):</h6>
+        <div>
+          <span
+              v-for="n in 5"
+              :key="'rate_'+n"
+              @click="submitRating(n)"
+              style="cursor: pointer; margin: 0 5px; font-size: 1.2rem; color: #f8f9fa; background: #3c3c3c; padding: 5px 10px; border-radius: 5px;"
+          >
+            {{ n }}
           </span>
         </div>
       </div>
@@ -199,10 +220,6 @@ onMounted(async () => {
 }
 .video-container {
   height: 400px;
-}
-.rating-stars .star {
-  font-size: 2rem;
-  color: gold;
 }
 .review-item {
   background-color: #3c3c3c;
