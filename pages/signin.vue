@@ -8,17 +8,17 @@ const password = ref("");
 
 const authStore = useAuthStore();
 const router = useRouter();
+const errorMessage = ref("");
+
 const login = async () => {
   try {
-    await authStore.signin(
-        {
-          email: email.value,
-          password: password.value,
-        }
-    );
+    await authStore.signin({
+      email: email.value,
+      password: password.value,
+    });
     router.push("/");
   } catch (e) {
-    console.error(e);
+    errorMessage.value = "Invalid email or password.";
   }
 };
 </script>
@@ -28,6 +28,7 @@ const login = async () => {
     <div class="card p-4 shadow w-50">
       <form @submit.prevent="login">
         <h1 class="text-center mb-4">Login</h1>
+        <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
         <div class="mb-3">
           <label for="email" class="form-label">E-Mail</label>
           <input v-model="email" type="email" class="form-control" id="email" placeholder="mail@email.com">
@@ -45,8 +46,11 @@ const login = async () => {
 </template>
 
 <style scoped>
-/* Optional: Add a background color or style */
 body {
-  background-color: #f8f9fa; /* Light grey background */
+  background-color: orange;
+}
+.card {
+  border-radius: 10px;
+  background-color: orange;
 }
 </style>
